@@ -108,7 +108,7 @@ export async function generateCourseFromFile(file: File): Promise<CourseStructur
   const mimeType = getMimeType(file);
 
   const response = await ai.models.generateContent({
-    model: 'gemini-2.0-flash',
+    model: 'gemini-1.5-flash',
     contents: [
       {
         role: 'user',
@@ -184,7 +184,7 @@ ${lessonContent?.slice(0, 2000) ?? ''}`;
   ];
 
   const response = await ai.models.generateContent({
-    model: 'gemini-2.0-flash',
+    model: 'gemini-1.5-flash',
     contents,
   });
 

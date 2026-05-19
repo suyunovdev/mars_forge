@@ -124,7 +124,7 @@ const translations = {
 
     // AI Import
     'aiImport.title': 'AI Import',
-    'aiImport.upload': 'Hujjat yuklang (PDF)',
+    'aiImport.upload': 'PDF, Word, PowerPoint fayllarni yuklang',
     'aiImport.generate': 'Hujjatdan kurs yaratish',
     'aiImport.processing': "AI kurs strukturasi o'qimoqda...",
     'aiImport.done': 'Generatsiya muvaffaqiyatli yakunlandi!',
@@ -159,6 +159,65 @@ const translations = {
     'viewer.correct': "To'g'ri",
     'viewer.wrong': "Noto'g'ri",
     'viewer.selectAnswer': 'Javobni tanlang',
+    'viewer.videoLesson': 'Video dars',
+
+    // Video
+    'lesson.video': 'Video',
+
+    // AI Tutor
+    'tutor.title': 'AI Tutor',
+    'tutor.placeholder': 'Savol bering...',
+    'tutor.send': 'Yuborish',
+    'tutor.welcome': "Salom! Dars bo'yicha savollaringizga javob beraman.",
+    'tutor.noApiKey': 'API kalit kerak',
+    'tutor.thinking': "O'ylayapman...",
+
+    // Certificate
+    'cert.title': 'Sertifikat',
+    'cert.subtitle': 'Ushbu sertifikat tasdiqlaydi ki:',
+    'cert.completed': 'kursini muvaffaqiyatli tamomladi.',
+    'cert.date': 'Sana',
+    'cert.score': 'Ball',
+    'cert.print': 'Chop etish / PDF saqlash',
+    'cert.get': 'Sertifikat olish',
+    'cert.notFound': 'Sertifikat topilmadi',
+    'cert.back': '← Orqaga',
+
+    // Question types
+    'q.multiple_choice': "Ko'p tanlov",
+    'q.true_false': "To'g'ri/Noto'g'ri",
+    'q.short_answer': 'Qisqa javob',
+    'q.matching': 'Moslashtirish',
+    'q.ordering': 'Tartibga solish',
+    'q.essay': 'Insho',
+    'q.trueOption': "To'g'ri",
+    'q.falseOption': "Noto'g'ri",
+    'q.yourAnswer': 'Javobingiz',
+    'q.matchLeft': 'Chap',
+    'q.matchRight': "O'ng",
+    'q.addPair': "Juft qo'shish",
+    'q.addItem': "Element qo'shish",
+    'q.moveUp': 'Yuqoriga',
+    'q.moveDown': 'Pastga',
+    'q.essayPlaceholder': 'Javobingizni yozing...',
+    'q.saveEssay': 'Javobni saqlash',
+    'q.expectedAnswer': "To'g'ri javob (sistema uchun)",
+
+    // Overdue
+    'overdue.label': "Muddati o'tgan",
+    'overdue.badge': "⚠️ Muddati o'tgan",
+    'overdue.due': 'Muddat',
+
+    // CSV Export
+    'export.csv': 'CSV yuklab olish',
+    'export.report': 'Hisobot',
+
+    // Employee Detail (Manager)
+    'empDetail.title': 'Xodim kartasi',
+    'empDetail.courses': 'Kurslar tarixi',
+    'empDetail.noCourses': "Tayinlangan kurslar yo'q",
+    'empDetail.completedAt': 'Tugallangan sana',
+    'empDetail.back': '← Jamoa progressi',
 
     // Manager
     'manager.dashboard': 'Dashboard',
@@ -189,6 +248,15 @@ const translations = {
     'brand.admin': 'LMS Admin',
     'brand.manager': 'Rahbar paneli',
     'brand.employee': "O'quv portali",
+
+    // Tab filters
+    'emp.tab.all': 'Hammasi',
+    'emp.tab.inProgress': 'Jarayonda',
+    'emp.tab.completed': 'Tugallangan',
+    'emp.tab.overdue': "Muddati o'tgan",
+
+    // Manager view
+    'manager.viewEmployee': "Ko'rish →",
   },
 
   ru: {
@@ -314,7 +382,7 @@ const translations = {
 
     // AI Import
     'aiImport.title': 'AI Импорт',
-    'aiImport.upload': 'Загрузите документ (PDF)',
+    'aiImport.upload': 'Загрузите PDF, Word, PowerPoint файлы',
     'aiImport.generate': 'Создать курс из документа',
     'aiImport.processing': 'AI читает структуру курса...',
     'aiImport.done': 'Генерация успешно завершена!',
@@ -349,6 +417,65 @@ const translations = {
     'viewer.correct': 'Правильно',
     'viewer.wrong': 'Неправильно',
     'viewer.selectAnswer': 'Выберите ответ',
+    'viewer.videoLesson': 'Видео урок',
+
+    // Video
+    'lesson.video': 'Видео',
+
+    // AI Tutor
+    'tutor.title': 'AI Тьютор',
+    'tutor.placeholder': 'Задайте вопрос...',
+    'tutor.send': 'Отправить',
+    'tutor.welcome': 'Привет! Отвечу на ваши вопросы по уроку.',
+    'tutor.noApiKey': 'Нужен API ключ',
+    'tutor.thinking': 'Думаю...',
+
+    // Certificate
+    'cert.title': 'Сертификат',
+    'cert.subtitle': 'Настоящий сертификат подтверждает, что:',
+    'cert.completed': 'успешно завершил(а) курс.',
+    'cert.date': 'Дата',
+    'cert.score': 'Балл',
+    'cert.print': 'Распечатать / Сохранить PDF',
+    'cert.get': 'Получить сертификат',
+    'cert.notFound': 'Сертификат не найден',
+    'cert.back': '← Назад',
+
+    // Question types
+    'q.multiple_choice': 'Множественный выбор',
+    'q.true_false': 'Верно/Неверно',
+    'q.short_answer': 'Краткий ответ',
+    'q.matching': 'Сопоставление',
+    'q.ordering': 'Упорядочивание',
+    'q.essay': 'Эссе',
+    'q.trueOption': 'Верно',
+    'q.falseOption': 'Неверно',
+    'q.yourAnswer': 'Ваш ответ',
+    'q.matchLeft': 'Левая',
+    'q.matchRight': 'Правая',
+    'q.addPair': 'Добавить пару',
+    'q.addItem': 'Добавить элемент',
+    'q.moveUp': 'Вверх',
+    'q.moveDown': 'Вниз',
+    'q.essayPlaceholder': 'Напишите ваш ответ...',
+    'q.saveEssay': 'Сохранить ответ',
+    'q.expectedAnswer': 'Правильный ответ (для системы)',
+
+    // Overdue
+    'overdue.label': 'Просрочено',
+    'overdue.badge': '⚠️ Просрочено',
+    'overdue.due': 'Срок',
+
+    // CSV Export
+    'export.csv': 'Скачать CSV',
+    'export.report': 'Отчёт',
+
+    // Employee Detail (Manager)
+    'empDetail.title': 'Карточка сотрудника',
+    'empDetail.courses': 'История курсов',
+    'empDetail.noCourses': 'Нет назначенных курсов',
+    'empDetail.completedAt': 'Дата завершения',
+    'empDetail.back': '← Прогресс команды',
 
     // Manager
     'manager.dashboard': 'Главная',
@@ -379,6 +506,15 @@ const translations = {
     'brand.admin': 'LMS Админ',
     'brand.manager': 'Панель руководителя',
     'brand.employee': 'Учебный портал',
+
+    // Tab filters
+    'emp.tab.all': 'Все',
+    'emp.tab.inProgress': 'В процессе',
+    'emp.tab.completed': 'Завершённые',
+    'emp.tab.overdue': 'Просроченные',
+
+    // Manager view
+    'manager.viewEmployee': 'Смотреть →',
   },
 } as const;
 

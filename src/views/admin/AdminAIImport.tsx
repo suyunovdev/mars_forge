@@ -1,11 +1,26 @@
 import React, { useState, useRef } from 'react';
 import { UploadCloud, CheckCircle, Loader2, AlertTriangle, FileText, BookOpen } from 'lucide-react';
 import { useNavigate } from 'react-router';
-import { generateCourseFromPdf, CourseStructure } from '../../services/gemini';
+import { generateCourseFromFile, CourseStructure } from '../../services/gemini';
 import { db } from '../../store/db';
 import { useApp } from '../../contexts/AppContext';
 
 type Status = 'idle' | 'processing' | 'done' | 'error';
+
+const ACCEPTED_MIME_TYPES = [
+  'application/pdf',
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  'application/msword',
+  'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+  'application/vnd.ms-powerpoint',
+];
+
+const ACCEPTED_EXTS = ['.pdf', '.docx', '.doc', '.pptx', '.ppt'];
+
+function isAcceptedFile(f: File): boolean {
+  const ext = '.' + (f.name.split('.').pop()?.toLowerCase() ?? '');
+  return ACCEPTED_EXTS.includes(ext) || ACCEPTED_MIME_TYPES.includes(f.type);
+}
 
 export function AdminAIImport() {
   const { t } = useApp();
@@ -21,8 +36,8 @@ export function AdminAIImport() {
 
   function handleFileSelect(f: File | null) {
     if (!f) return;
-    if (f.type !== 'application/pdf') {
-      setErrorMsg('Faqat PDF fayl qabul qilinadi');
+    if (!isAcceptedFile(f)) {
+      setErrorMsg('Faqat PDF, Word (.docx, .doc) va PowerPoint (.pptx, .ppt) fayllari qabul qilinadi');
       return;
     }
     setFile(f);
@@ -43,7 +58,7 @@ export function AdminAIImport() {
     setStatus('processing');
     setErrorMsg('');
     try {
-      const courseData = await generateCourseFromPdf(file);
+      const courseData = await generateCourseFromFile(file);
       setResult(courseData);
       setStatus('done');
     } catch (err) {
@@ -70,7 +85,7 @@ export function AdminAIImport() {
     <div className="max-w-5xl mx-auto">
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{t('aiImport.title')}</h1>
-        <p className="text-gray-500 dark:text-slate-400 text-sm mt-1">PDF hujjatdan avtomatik kurs strukturasi yaratish</p>
+        <p className="text-gray-500 dark:text-slate-400 text-sm mt-1">PDF, Word, PowerPoint hujjatlardan avtomatik kurs strukturasi yaratish</p>
       </div>
 
       {/* API Key warning */}
@@ -96,7 +111,7 @@ export function AdminAIImport() {
               <input
                 type="file"
                 ref={fileRef}
-                accept=".pdf"
+                accept=".pdf,.docx,.doc,.pptx,.ppt"
                 className="hidden"
                 onChange={e => handleFileSelect(e.target.files?.[0] ?? null)}
               />
@@ -122,8 +137,9 @@ export function AdminAIImport() {
                 ) : (
                   <>
                     <UploadCloud size={36} className="text-gray-400 dark:text-slate-500 mb-3" />
-                    <p className="text-sm font-medium text-gray-700 dark:text-slate-300">PDF faylni shu yerga tashlang</p>
+                    <p className="text-sm font-medium text-gray-700 dark:text-slate-300">PDF, Word, PowerPoint faylni shu yerga tashlang</p>
                     <p className="text-xs text-gray-400 dark:text-slate-500 mt-1">yoki bosib tanlang</p>
+                    <p className="text-xs text-gray-300 dark:text-slate-600 mt-2">.pdf · .docx · .doc · .pptx · .ppt</p>
                   </>
                 )}
               </div>

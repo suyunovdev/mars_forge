@@ -1,8 +1,9 @@
 import React, { useMemo } from 'react';
 import { Link } from 'react-router';
-import { Users2, BookOpen, TrendingUp, Award } from 'lucide-react';
+import { Users2, BookOpen, TrendingUp, Award, Download } from 'lucide-react';
 import { auth, db } from '../../store/db';
 import { useApp } from '../../contexts/AppContext';
+import { downloadCSV } from '../../utils/export';
 
 function StatCard({
   icon: Icon,
@@ -54,6 +55,32 @@ export function ManagerDashboard() {
     not_started: 'bg-gray-200 dark:bg-slate-700 text-gray-500 dark:text-slate-400',
   };
 
+  function handleExportCSV() {
+    if (!stats) return;
+    const dept = stats.department?.name ?? '—';
+    const headers = ["Bo'lim", 'Xodim', 'Email', "Kurslar soni", "O'rtacha progress", 'Tugallangan', "Muddati o'tgan"];
+    const rows: string[][] = [headers];
+
+    for (const { employee, enrollments } of stats.teamProgress) {
+      const avgProgress = enrollments.length > 0
+        ? Math.round(enrollments.reduce((s, e) => s + e.enrollment.progress_percent, 0) / enrollments.length)
+        : 0;
+      const completed = enrollments.filter(e => e.enrollment.status === 'completed').length;
+      const overdue = enrollments.filter(e => e.is_overdue).length;
+      rows.push([
+        dept,
+        employee.full_name,
+        employee.email,
+        String(enrollments.length),
+        `${avgProgress}%`,
+        String(completed),
+        String(overdue),
+      ]);
+    }
+
+    downloadCSV(rows, `manager-hisobot-${new Date().toISOString().slice(0, 10)}.csv`);
+  }
+
   if (!stats) {
     return (
       <div className="text-gray-500 dark:text-slate-400 text-center py-20">
@@ -65,13 +92,22 @@ export function ManagerDashboard() {
   return (
     <div className="max-w-5xl mx-auto space-y-8">
       {/* Header */}
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-slate-100">{t('manager.dashboard')}</h1>
-        {stats.department && (
-          <p className="text-gray-500 dark:text-slate-400 text-sm mt-1">
-            {t('manager.department')}: <span className="text-emerald-400 font-medium">{stats.department.name}</span>
-          </p>
-        )}
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-slate-100">{t('manager.dashboard')}</h1>
+          {stats.department && (
+            <p className="text-gray-500 dark:text-slate-400 text-sm mt-1">
+              {t('manager.department')}: <span className="text-emerald-400 font-medium">{stats.department.name}</span>
+            </p>
+          )}
+        </div>
+        <button
+          onClick={handleExportCSV}
+          className="flex items-center gap-2 px-4 py-2 rounded-xl bg-gray-100 dark:bg-slate-800 hover:bg-gray-200 dark:hover:bg-slate-700 text-gray-700 dark:text-slate-300 text-sm font-medium transition shrink-0"
+        >
+          <Download size={15} />
+          {t('export.csv')}
+        </button>
       </div>
 
       {/* Stat cards */}
@@ -108,6 +144,7 @@ export function ManagerDashboard() {
                         enrollments.length
                     )
                   : 0;
+              const hasOverdue = enrollments.some(e => e.is_overdue);
               return (
                 <div key={employee.id} className="px-6 py-4 flex items-center gap-4">
                   {/* Avatar */}
@@ -119,7 +156,14 @@ export function ManagerDashboard() {
 
                   {/* Name + courses */}
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-gray-800 dark:text-slate-200 truncate">{employee.full_name}</p>
+                    <div className="flex items-center gap-2">
+                      <p className="text-sm font-medium text-gray-800 dark:text-slate-200 truncate">{employee.full_name}</p>
+                      {hasOverdue && (
+                        <span className="text-xs px-1.5 py-0.5 rounded-full bg-red-500/15 text-red-400 border border-red-500/30 shrink-0 font-medium">
+                          ⚠️
+                        </span>
+                      )}
+                    </div>
                     <p className="text-xs text-gray-400 dark:text-slate-500">{enrollments.length} {t('manager.assigned')}</p>
                   </div>
 

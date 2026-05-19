@@ -13,9 +13,11 @@ import { AdminDepartments } from './views/admin/AdminDepartments';
 import { ManagerLayout }   from './views/manager/ManagerLayout';
 import { ManagerDashboard } from './views/manager/ManagerDashboard';
 import { ManagerTeam }     from './views/manager/ManagerTeam';
+import { ManagerEmployeeDetail } from './views/manager/ManagerEmployeeDetail';
 import { EmployeeLayout }  from './views/employee/EmployeeLayout';
 import { EmployeeDashboard } from './views/employee/EmployeeDashboard';
 import { CourseViewer }    from './views/employee/CourseViewer';
+import { Certificate }     from './views/employee/Certificate';
 
 /** Redirect logged-in users to their role's home page */
 function RoleHome() {
@@ -79,8 +81,9 @@ export default function App() {
           element={<RequireManager><ManagerLayout /></RequireManager>}
         >
           <Route index element={<Navigate to="dashboard" replace />} />
-          <Route path="dashboard" element={<ManagerDashboard />} />
-          <Route path="team"      element={<ManagerTeam />} />
+          <Route path="dashboard"              element={<ManagerDashboard />} />
+          <Route path="team"                   element={<ManagerTeam />} />
+          <Route path="employee/:employeeId"   element={<ManagerEmployeeDetail />} />
         </Route>
 
         {/* ── Employee / Xodim ── */}
@@ -89,8 +92,9 @@ export default function App() {
           element={<RequireAuth><EmployeeLayout /></RequireAuth>}
         >
           <Route index element={<Navigate to="my-courses" replace />} />
-          <Route path="my-courses"   element={<EmployeeDashboard />} />
-          <Route path="course/:id"   element={<CourseViewer />} />
+          <Route path="my-courses"             element={<EmployeeDashboard />} />
+          <Route path="course/:id"             element={<CourseViewer />} />
+          <Route path="certificate/:courseId"  element={<Certificate />} />
         </Route>
 
         {/* Fallback */}

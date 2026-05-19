@@ -6,19 +6,58 @@ function uid(): string {
 
 export type Role = 'admin' | 'employee' | 'manager';
 export type CourseStatus = 'draft' | 'published';
-export type LessonType = 'text' | 'quiz';
+export type LessonType = 'text' | 'quiz' | 'video';
 export type EnrollStatus = 'not_started' | 'in_progress' | 'completed';
+export type QuestionType = 'multiple_choice' | 'true_false' | 'short_answer' | 'matching' | 'ordering' | 'essay';
 
 export interface Department { id: string; name: string; org_id: string; parent_id?: string; }
 export interface Employee { id: string; full_name: string; email: string; password: string; role: Role; department_id?: string; status: 'active' | 'deleted'; }
 export interface Course { id: string; title: string; description: string; status: CourseStatus; created_at: string; }
 export interface Module { id: string; course_id: string; title: string; order: number; }
-export interface QuizQuestion { question: string; options: string[]; correct: number; }
-export interface Lesson { id: string; module_id: string; title: string; lesson_type: LessonType; content: { markdown?: string; questions?: QuizQuestion[] }; order: number; }
+
+export interface QuizQuestion {
+  id: string;
+  type: QuestionType;
+  question: string;
+  // multiple_choice
+  options?: string[];
+  correct?: number;
+  // true_false — correct: 0 = True, 1 = False
+  // short_answer
+  expectedAnswer?: string;
+  // matching
+  matchPairs?: { left: string; right: string }[];
+  // ordering
+  orderItems?: string[];
+  correctOrder?: number[]; // correct indexes order
+  // essay — free text, no auto-grade
+}
+
+export interface Lesson {
+  id: string;
+  module_id: string;
+  title: string;
+  lesson_type: LessonType;
+  content: {
+    markdown?: string;
+    questions?: QuizQuestion[];
+    videoUrl?: string; // for video type
+  };
+  order: number;
+}
+
 export interface Assignment { id: string; course_id: string; assignee_type: 'employee' | 'department'; assignee_id: string; due_date?: string; }
-export interface Enrollment { id: string; user_id: string; course_id: string; status: EnrollStatus; progress_percent: number; }
+export interface Enrollment { id: string; user_id: string; course_id: string; status: EnrollStatus; progress_percent: number; completed_at?: string; }
 export interface LessonProgress { user_id: string; lesson_id: string; completed_at: string; }
 export interface AuthUser { id: string; email: string; role: Role; full_name: string; }
+
+export interface Certificate {
+  id: string;
+  user_id: string;
+  course_id: string;
+  issued_at: string;
+  score: number; // 0-100
+}
 
 export interface DBSchema {
   departments: Department[];
@@ -29,6 +68,7 @@ export interface DBSchema {
   assignments: Assignment[];
   enrollments: Enrollment[];
   lessonProgress: LessonProgress[];
+  certificates: Certificate[];
 }
 
 const SEED: DBSchema = {
@@ -65,8 +105,8 @@ const SEED: DBSchema = {
       id: 'l2', module_id: 'm1', title: 'Xavfsizlik bilimi testi', lesson_type: 'quiz',
       content: {
         questions: [
-          { question: 'Himoya ko\'zoynagi qachon kiyilishi kerak?', options: ['Faqat payvandlashda', 'Faqat kimyoviy ishlarda', 'Har doim ishlab chiqarishda', 'Hech qachon'], correct: 2 },
-          { question: 'Avariya holatida birinchi navbatda nima qilish kerak?', options: ['O\'zingizni saqlab qoling', 'Mashinani o\'chiring', 'Menejerga xabar bering', 'Chiqishga yuguring'], correct: 2 },
+          { id: 'q1', type: 'multiple_choice', question: 'Himoya ko\'zoynagi qachon kiyilishi kerak?', options: ['Faqat payvandlashda', 'Faqat kimyoviy ishlarda', 'Har doim ishlab chiqarishda', 'Hech qachon'], correct: 2 },
+          { id: 'q2', type: 'multiple_choice', question: 'Avariya holatida birinchi navbatda nima qilish kerak?', options: ['O\'zingizni saqlab qoling', 'Mashinani o\'chiring', 'Menejerga xabar bering', 'Chiqishga yuguring'], correct: 2 },
         ]
       },
       order: 2
@@ -85,8 +125,8 @@ const SEED: DBSchema = {
       id: 'l5', module_id: 'm3', title: 'Logistika tizimi testi', lesson_type: 'quiz',
       content: {
         questions: [
-          { question: 'Logistika zanjirining asosiy maqsadi nima?', options: ['Xarajatlarni kamaytirish', 'Mahsulotni vaqtida yetkazib berish', 'Faqat transport xarajatlari', 'Ombor boshqaruvi'], correct: 1 },
-          { question: 'JIT (Just-In-Time) nima degani?', options: ['Har doim kechikish', 'O\'z vaqtida yetkazib berish', 'Ko\'p zaxira saqlash', 'Tez transport'], correct: 1 },
+          { id: 'q3', type: 'multiple_choice', question: 'Logistika zanjirining asosiy maqsadi nima?', options: ['Xarajatlarni kamaytirish', 'Mahsulotni vaqtida yetkazib berish', 'Faqat transport xarajatlari', 'Ombor boshqaruvi'], correct: 1 },
+          { id: 'q4', type: 'multiple_choice', question: 'JIT (Just-In-Time) nima degani?', options: ['Har doim kechikish', 'O\'z vaqtida yetkazib berish', 'Ko\'p zaxira saqlash', 'Tez transport'], correct: 1 },
         ]
       },
       order: 2
@@ -104,6 +144,7 @@ const SEED: DBSchema = {
     { id: 'e3', user_id: 'u4', course_id: 'c1', status: 'not_started', progress_percent: 0 },
   ],
   lessonProgress: [],
+  certificates: [],
 };
 
 function load(): DBSchema {
@@ -111,11 +152,27 @@ function load(): DBSchema {
     const raw = localStorage.getItem(DB_KEY);
     if (!raw) {
       localStorage.setItem(DB_KEY, JSON.stringify(SEED));
-      return SEED;
+      return JSON.parse(JSON.stringify(SEED)) as DBSchema;
     }
-    return JSON.parse(raw) as DBSchema;
+    const parsed = JSON.parse(raw) as DBSchema;
+    // Migrate: ensure certificates array exists
+    if (!parsed.certificates) {
+      parsed.certificates = [];
+    }
+    // Migrate: ensure quiz questions have id and type
+    parsed.lessons = parsed.lessons.map(lesson => {
+      if (lesson.lesson_type === 'quiz' && lesson.content.questions) {
+        lesson.content.questions = lesson.content.questions.map(q => ({
+          id: (q as QuizQuestion).id ?? uid(),
+          type: (q as QuizQuestion).type ?? 'multiple_choice',
+          ...q,
+        }));
+      }
+      return lesson;
+    });
+    return parsed;
   } catch {
-    return SEED;
+    return JSON.parse(JSON.stringify(SEED)) as DBSchema;
   }
 }
 
@@ -421,30 +478,42 @@ export const db = {
       save(d);
       return item;
     },
-    getAssignedCourses(userId: string): (Course & { enrollment: Enrollment | null })[] {
+    getAssignedCourses(userId: string): (Course & { enrollment: Enrollment | null; due_date?: string; is_overdue: boolean })[] {
       const d = getDB();
       const user = d.employees.find(e => e.id === userId);
       if (!user) return [];
+      const now = new Date().toISOString().slice(0, 10);
       // find all course ids assigned to this user or their department
-      const assignedCourseIds = new Set<string>();
+      const assignedCourseMap = new Map<string, string | undefined>(); // courseId -> due_date
       for (const a of d.assignments) {
         if (a.assignee_type === 'employee' && a.assignee_id === userId) {
-          assignedCourseIds.add(a.course_id);
+          assignedCourseMap.set(a.course_id, a.due_date);
         }
         if (a.assignee_type === 'department' && a.assignee_id === user.department_id) {
-          assignedCourseIds.add(a.course_id);
+          if (!assignedCourseMap.has(a.course_id)) {
+            assignedCourseMap.set(a.course_id, a.due_date);
+          }
         }
       }
       // also add courses the user is enrolled in
       for (const e of d.enrollments.filter(e => e.user_id === userId)) {
-        assignedCourseIds.add(e.course_id);
+        if (!assignedCourseMap.has(e.course_id)) {
+          assignedCourseMap.set(e.course_id, undefined);
+        }
       }
       return d.courses
-        .filter(c => assignedCourseIds.has(c.id) && c.status === 'published')
-        .map(c => ({
-          ...c,
-          enrollment: d.enrollments.find(e => e.user_id === userId && e.course_id === c.id) ?? null,
-        }));
+        .filter(c => assignedCourseMap.has(c.id) && c.status === 'published')
+        .map(c => {
+          const enrollment = d.enrollments.find(e => e.user_id === userId && e.course_id === c.id) ?? null;
+          const due_date = assignedCourseMap.get(c.id);
+          const is_overdue = !!(due_date && due_date < now && enrollment?.status !== 'completed');
+          return {
+            ...c,
+            enrollment,
+            due_date,
+            is_overdue,
+          };
+        });
     },
   },
 
@@ -466,13 +535,58 @@ export const db = {
         .filter(l => d.lessonProgress.some(lp => lp.user_id === userId && lp.lesson_id === l.id)).length;
       const progressPercent = totalLessons > 0 ? Math.round((completedLessons / totalLessons) * 100) : 0;
       const enrollIdx = d.enrollments.findIndex(e => e.user_id === userId && e.course_id === courseId);
+      const newStatus: EnrollStatus = progressPercent >= 100 ? 'completed' : progressPercent > 0 ? 'in_progress' : 'not_started';
       if (enrollIdx !== -1) {
         d.enrollments[enrollIdx].progress_percent = progressPercent;
-        d.enrollments[enrollIdx].status = progressPercent >= 100 ? 'completed' : progressPercent > 0 ? 'in_progress' : 'not_started';
+        d.enrollments[enrollIdx].status = newStatus;
+        if (newStatus === 'completed' && !d.enrollments[enrollIdx].completed_at) {
+          d.enrollments[enrollIdx].completed_at = new Date().toISOString();
+        }
       } else {
-        d.enrollments.push({ id: uid(), user_id: userId, course_id: courseId, status: progressPercent >= 100 ? 'completed' : 'in_progress', progress_percent: progressPercent });
+        d.enrollments.push({
+          id: uid(),
+          user_id: userId,
+          course_id: courseId,
+          status: newStatus,
+          progress_percent: progressPercent,
+          completed_at: newStatus === 'completed' ? new Date().toISOString() : undefined,
+        });
       }
       save(d);
+    },
+  },
+
+  certificates: {
+    issue(userId: string, courseId: string, score: number): Certificate {
+      const d = getDB();
+      // Check if already issued
+      const existing = d.certificates.find(c => c.user_id === userId && c.course_id === courseId);
+      if (existing) return existing;
+      const cert: Certificate = {
+        id: uid(),
+        user_id: userId,
+        course_id: courseId,
+        issued_at: new Date().toISOString(),
+        score: Math.round(score),
+      };
+      d.certificates.push(cert);
+      save(d);
+      return cert;
+    },
+    getByUser(userId: string): (Certificate & { course: Course })[] {
+      const d = getDB();
+      return d.certificates
+        .filter(c => c.user_id === userId)
+        .map(c => {
+          const course = d.courses.find(co => co.id === c.course_id);
+          if (!course) return null;
+          return { ...c, course };
+        })
+        .filter((x): x is Certificate & { course: Course } => x !== null);
+    },
+    getByUserAndCourse(userId: string, courseId: string): Certificate | null {
+      const d = getDB();
+      return d.certificates.find(c => c.user_id === userId && c.course_id === courseId) ?? null;
     },
   },
 
@@ -483,6 +597,7 @@ export const db = {
       if (!manager) return null;
       const deptId = manager.department_id;
       const dept = deptId ? d.departments.find(dep => dep.id === deptId) : null;
+      const now = new Date().toISOString().slice(0, 10);
 
       const teamMembers = d.employees.filter(
         e => e.department_id === deptId && e.status !== 'deleted' && e.id !== managerId
@@ -491,8 +606,21 @@ export const db = {
       const teamProgress = teamMembers.map(emp => {
         const enrollments = d.enrollments
           .filter(e => e.user_id === emp.id)
-          .map(e => ({ enrollment: e, course: d.courses.find(c => c.id === e.course_id)! }))
-          .filter(x => x.course);
+          .map(e => {
+            const course = d.courses.find(c => c.id === e.course_id);
+            if (!course) return null;
+            // Find assignment for due_date
+            const assignment = d.assignments.find(
+              a => a.course_id === e.course_id &&
+              (
+                (a.assignee_type === 'employee' && a.assignee_id === emp.id) ||
+                (a.assignee_type === 'department' && a.assignee_id === emp.department_id)
+              )
+            ) ?? null;
+            const is_overdue = !!(assignment?.due_date && assignment.due_date < now && e.status !== 'completed');
+            return { enrollment: e, course, assignment, is_overdue };
+          })
+          .filter((x): x is { enrollment: Enrollment; course: Course; assignment: Assignment | null; is_overdue: boolean } => x !== null);
         return { employee: emp, enrollments };
       });
 

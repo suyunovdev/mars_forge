@@ -1,7 +1,9 @@
 import { useMemo, useState } from 'react';
-import { ChevronDown, ChevronRight } from 'lucide-react';
+import { ChevronDown, ChevronRight, Download } from 'lucide-react';
+import { Link } from 'react-router';
 import { auth, db } from '../../store/db';
 import { useApp } from '../../contexts/AppContext';
+import { downloadCSV } from '../../utils/export';
 
 function ProgressBar({ value }: { value: number }) {
   const color =
@@ -42,6 +44,32 @@ export function ManagerTeam() {
     });
   }
 
+  function handleExportCSV() {
+    if (!stats) return;
+    const headers = ['Ism', 'Email', 'Kurs', 'Progress', 'Holat', 'Deadline', 'Muddati'];
+    const rows: string[][] = [headers];
+
+    for (const { employee, enrollments } of stats.teamProgress) {
+      if (enrollments.length === 0) {
+        rows.push([employee.full_name, employee.email, '—', '0', t('status.not_started'), '—', '—']);
+      } else {
+        for (const { enrollment, course, assignment, is_overdue } of enrollments) {
+          rows.push([
+            employee.full_name,
+            employee.email,
+            course.title,
+            String(enrollment.progress_percent),
+            statusLabel(enrollment.status),
+            assignment?.due_date ?? '—',
+            is_overdue ? t('overdue.label') : '—',
+          ]);
+        }
+      }
+    }
+
+    downloadCSV(rows, `jamoa-progressi-${new Date().toISOString().slice(0, 10)}.csv`);
+  }
+
   if (!stats) {
     return (
       <div className="text-gray-400 dark:text-slate-400 text-center py-20">
@@ -53,15 +81,24 @@ export function ManagerTeam() {
   return (
     <div className="max-w-5xl mx-auto space-y-6">
       {/* Header */}
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-slate-100">{t('manager.teamProgress')}</h1>
-        {stats.department && (
-          <p className="text-gray-500 dark:text-slate-400 text-sm mt-1">
-            {t('manager.department')}: <span className="text-emerald-400 font-medium">{stats.department.name}</span>
-            {' · '}
-            <span className="text-gray-500 dark:text-slate-400">{stats.teamSize} ta xodim</span>
-          </p>
-        )}
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-slate-100">{t('manager.teamProgress')}</h1>
+          {stats.department && (
+            <p className="text-gray-500 dark:text-slate-400 text-sm mt-1">
+              {t('manager.department')}: <span className="text-emerald-400 font-medium">{stats.department.name}</span>
+              {' · '}
+              <span className="text-gray-500 dark:text-slate-400">{stats.teamSize} ta xodim</span>
+            </p>
+          )}
+        </div>
+        <button
+          onClick={handleExportCSV}
+          className="flex items-center gap-2 px-4 py-2 rounded-xl bg-gray-100 dark:bg-slate-800 hover:bg-gray-200 dark:hover:bg-slate-700 text-gray-700 dark:text-slate-300 text-sm font-medium transition shrink-0"
+        >
+          <Download size={15} />
+          {t('export.csv')}
+        </button>
       </div>
 
       {/* Summary row */}
@@ -81,10 +118,11 @@ export function ManagerTeam() {
       {/* Team table */}
       <div className="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-xl overflow-hidden">
         {/* Table header */}
-        <div className="grid grid-cols-[1fr_140px_120px] gap-4 px-6 py-3 bg-gray-100/80 dark:bg-slate-800/50 text-xs font-medium text-gray-500 dark:text-slate-400 uppercase tracking-wider">
+        <div className="grid grid-cols-[1fr_140px_120px_80px] gap-4 px-6 py-3 bg-gray-100/80 dark:bg-slate-800/50 text-xs font-medium text-gray-500 dark:text-slate-400 uppercase tracking-wider">
           <span>{t('manager.employee')}</span>
           <span>{t('manager.avgProgress')}</span>
           <span>{t('courses.status')}</span>
+          <span></span>
         </div>
 
         {stats.teamProgress.length === 0 ? (
@@ -102,26 +140,34 @@ export function ManagerTeam() {
                         enrollments.length
                     )
                   : 0;
-              const allDone  = enrollments.length > 0 && enrollments.every(e => e.enrollment.status === 'completed');
+              const allDone    = enrollments.length > 0 && enrollments.every(e => e.enrollment.status === 'completed');
               const anyStarted = enrollments.some(e => e.enrollment.status !== 'not_started');
               const overallStatus = allDone ? 'completed' : anyStarted ? 'in_progress' : 'not_started';
+              const hasOverdue = enrollments.some(e => e.is_overdue);
 
               return (
                 <div key={employee.id}>
                   {/* Employee row */}
-                  <button
-                    onClick={() => toggle(employee.id)}
-                    className="w-full grid grid-cols-[1fr_140px_120px] gap-4 px-6 py-4 text-left hover:bg-gray-50 dark:hover:bg-slate-800/40 transition group"
-                  >
+                  <div className="grid grid-cols-[1fr_140px_120px_80px] gap-4 px-6 py-4 hover:bg-gray-50 dark:hover:bg-slate-800/40 transition items-center">
                     {/* Name */}
-                    <div className="flex items-center gap-3 min-w-0">
+                    <button
+                      onClick={() => toggle(employee.id)}
+                      className="flex items-center gap-3 min-w-0 text-left"
+                    >
                       <div className="w-8 h-8 rounded-full bg-emerald-700 flex items-center justify-center shrink-0">
                         <span className="text-xs font-bold text-white">
                           {employee.full_name.charAt(0).toUpperCase()}
                         </span>
                       </div>
                       <div className="min-w-0">
-                        <p className="text-sm font-medium text-gray-800 dark:text-slate-200 truncate">{employee.full_name}</p>
+                        <div className="flex items-center gap-2">
+                          <p className="text-sm font-medium text-gray-800 dark:text-slate-200 truncate">{employee.full_name}</p>
+                          {hasOverdue && (
+                            <span className="text-xs px-1.5 py-0.5 rounded-full bg-red-500/15 text-red-400 border border-red-500/30 shrink-0">
+                              {t('overdue.badge')}
+                            </span>
+                          )}
+                        </div>
                         <p className="text-xs text-gray-400 dark:text-slate-500 truncate">{employee.email}</p>
                       </div>
                       {enrollments.length > 0 && (
@@ -129,7 +175,7 @@ export function ManagerTeam() {
                           ? <ChevronDown size={14} className="text-gray-400 dark:text-slate-500 shrink-0 ml-1" />
                           : <ChevronRight size={14} className="text-gray-400 dark:text-slate-500 shrink-0 ml-1" />
                       )}
-                    </div>
+                    </button>
 
                     {/* Progress bar */}
                     <div className="flex items-center">
@@ -148,21 +194,42 @@ export function ManagerTeam() {
                         {statusLabel(overallStatus)}
                       </span>
                     </div>
-                  </button>
+
+                    {/* Detail link */}
+                    <div className="flex items-center justify-end">
+                      <Link
+                        to={`/manager/employee/${employee.id}`}
+                        className="text-xs text-emerald-400 hover:text-emerald-300 font-medium transition"
+                      >
+                        {t('manager.viewEmployee')}
+                      </Link>
+                    </div>
+                  </div>
 
                   {/* Expanded courses */}
                   {isOpen && enrollments.length > 0 && (
                     <div className="bg-gray-50/60 dark:bg-slate-950/60 border-t border-gray-200/60 dark:border-slate-800 divide-y divide-gray-200/60 dark:divide-slate-800/60">
-                      {enrollments.map(({ enrollment, course }) => (
+                      {enrollments.map(({ enrollment, course, assignment, is_overdue }) => (
                         <div
                           key={course.id}
-                          className="grid grid-cols-[1fr_140px_120px] gap-4 px-6 py-3 pl-16 items-center"
+                          className={`grid grid-cols-[1fr_140px_120px_80px] gap-4 px-6 py-3 pl-16 items-center ${is_overdue ? 'bg-red-50/50 dark:bg-red-950/10' : ''}`}
                         >
-                          <p className="text-sm text-gray-700 dark:text-slate-300 truncate">{course.title}</p>
+                          <div>
+                            <p className="text-sm text-gray-700 dark:text-slate-300 truncate">{course.title}</p>
+                            {is_overdue && (
+                              <p className="text-xs text-red-400 mt-0.5">{t('overdue.badge')}</p>
+                            )}
+                            {assignment?.due_date && (
+                              <p className={`text-xs mt-0.5 ${is_overdue ? 'text-red-400' : 'text-gray-400 dark:text-slate-500'}`}>
+                                {t('overdue.due')}: {assignment.due_date}
+                              </p>
+                            )}
+                          </div>
                           <ProgressBar value={enrollment.progress_percent} />
                           <span className={`text-[11px] px-2.5 py-1 rounded-full font-medium w-fit ${STATUS_COLOR[enrollment.status]}`}>
                             {statusLabel(enrollment.status)}
                           </span>
+                          <div />
                         </div>
                       ))}
                     </div>

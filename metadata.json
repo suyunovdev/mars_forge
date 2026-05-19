@@ -1,0 +1,8 @@
+{
+  "name": "Corporate LMS - Mars Forge",
+  "description": "A prototype of a Corporate LMS that allows course generation via AI import, and training progress tracking across the organization.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

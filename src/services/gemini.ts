@@ -12,11 +12,19 @@ export interface CourseStructure {
   }[];
 }
 
+export function getStoredApiKey(): string {
+  return localStorage.getItem('lms_gemini_key') ?? '';
+}
+
+export function setStoredApiKey(key: string): void {
+  localStorage.setItem('lms_gemini_key', key.trim());
+}
+
 function getApiKey(): string {
-  const key = process.env.GEMINI_API_KEY;
+  const key = getStoredApiKey();
   if (!key) {
     throw new Error(
-      'GEMINI_API_KEY topilmadi. Iltimos, .env faylida GEMINI_API_KEY=your_key_here qo\'ying va loyihani qayta ishga tushiring.'
+      'Gemini API kaliti topilmadi. Admin → Sozlamalar bo\'limida API kalitingizni kiriting.'
     );
   }
   return key;

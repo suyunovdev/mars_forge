@@ -10,6 +10,7 @@ import { AdminCourses }    from './views/admin/AdminCourses';
 import { AdminCourseDetail } from './views/admin/AdminCourseDetail';
 import { AdminEmployees }  from './views/admin/AdminEmployees';
 import { AdminDepartments } from './views/admin/AdminDepartments';
+import { AdminSettings }   from './views/admin/AdminSettings';
 import { ManagerLayout }   from './views/manager/ManagerLayout';
 import { ManagerDashboard } from './views/manager/ManagerDashboard';
 import { ManagerTeam }     from './views/manager/ManagerTeam';
@@ -73,6 +74,7 @@ export default function App() {
           <Route path="courses/:id"  element={<AdminCourseDetail />} />
           <Route path="employees"    element={<AdminEmployees />} />
           <Route path="departments"  element={<AdminDepartments />} />
+          <Route path="settings"     element={<AdminSettings />} />
         </Route>
 
         {/* ── Manager / Rahbar ── */}

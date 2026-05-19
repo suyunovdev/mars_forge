@@ -1,5 +1,5 @@
 import { Outlet, Link, useNavigate, useLocation } from 'react-router';
-import { LogOut, BookOpen, UploadCloud, Users, LayoutDashboard, Building, Sun, Moon } from 'lucide-react';
+import { LogOut, BookOpen, UploadCloud, Users, LayoutDashboard, Building, Sun, Moon, Settings } from 'lucide-react';
 import { auth } from '../../store/db';
 import { useApp } from '../../contexts/AppContext';
 
@@ -20,6 +20,7 @@ export function AdminLayout() {
     { to: '/admin/courses',   labelKey: 'nav.courses' as const,    icon: BookOpen },
     { to: '/admin/employees', labelKey: 'nav.employees' as const,  icon: Users },
     { to: '/admin/departments', labelKey: 'nav.departments' as const, icon: Building },
+    { to: '/admin/settings',   labelKey: 'nav.settings' as const,    icon: Settings },
   ];
 
   return (

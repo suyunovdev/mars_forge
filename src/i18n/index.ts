@@ -10,6 +10,7 @@ const translations = {
     'nav.departments': "Bo'limlar",
     'nav.teamProgress': 'Jamoa progressi',
     'nav.myCourses': 'Mening kurslarim',
+    'nav.settings': 'Sozlamalar',
     'nav.logout': 'Chiqish',
 
     // Auth
@@ -268,6 +269,7 @@ const translations = {
     'nav.departments': 'Отделы',
     'nav.teamProgress': 'Прогресс команды',
     'nav.myCourses': 'Мои курсы',
+    'nav.settings': 'Настройки',
     'nav.logout': 'Выйти',
 
     // Auth

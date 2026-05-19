@@ -1,7 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { UploadCloud, CheckCircle, Loader2, AlertTriangle, FileText, BookOpen } from 'lucide-react';
 import { useNavigate } from 'react-router';
-import { generateCourseFromFile, CourseStructure } from '../../services/gemini';
+import { generateCourseFromFile, CourseStructure, getStoredApiKey } from '../../services/gemini';
 import { db } from '../../store/db';
 import { useApp } from '../../contexts/AppContext';
 
@@ -32,7 +32,7 @@ export function AdminAIImport() {
   const fileRef = useRef<HTMLInputElement>(null);
   const navigate = useNavigate();
 
-  const hasApiKey = !!process.env.GEMINI_API_KEY;
+  const hasApiKey = !!getStoredApiKey();
 
   function handleFileSelect(f: File | null) {
     if (!f) return;
@@ -93,9 +93,9 @@ export function AdminAIImport() {
         <div className="mb-6 flex items-start gap-3 p-4 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-300">
           <AlertTriangle size={18} className="shrink-0 mt-0.5" />
           <div>
-            <p className="text-sm font-semibold">GEMINI_API_KEY topilmadi</p>
+            <p className="text-sm font-semibold">Gemini API kaliti topilmadi</p>
             <p className="text-xs text-amber-400 mt-1">
-              {t('aiImport.noApiKey')}
+              Admin → <a href="/admin/settings" className="underline font-medium">Sozlamalar</a> bo'limida API kalitingizni kiriting.
             </p>
           </div>
         </div>

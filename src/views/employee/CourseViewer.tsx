@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router';
 import { ArrowLeft, CheckCircle2, Circle, ChevronLeft, ChevronRight, ChevronUp, ChevronDown, Bot, X, Send } from 'lucide-react';
 import { auth, db, Lesson, Module, Course } from '../../store/db';
-import { generateTutorResponse } from '../../services/gemini';
+import { generateTutorResponse, getStoredApiKey } from '../../services/gemini';
 import { useApp } from '../../contexts/AppContext';
 
 type LessonFull = Lesson;
@@ -185,7 +185,7 @@ export function CourseViewer() {
   }
 
   // AI Tutor
-  const hasApiKey = !!process.env.GEMINI_API_KEY;
+  const hasApiKey = !!getStoredApiKey();
 
   async function sendTutorMessage() {
     if (!tutorInput.trim() || tutorLoading) return;
